@@ -1,15 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as duckdb from '@duckdb/duckdb-wasm';
-// Vite-friendly bundles so worker and WASM are served correctly in dev
-import duckdb_wasm_mvp from '@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url';
-import mvp_worker from '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url';
-import duckdb_wasm_eh from '@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url';
-import eh_worker from '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url';
 
-const MANUAL_BUNDLES = {
-  mvp: { mainModule: duckdb_wasm_mvp, mainWorker: mvp_worker },
-  eh: { mainModule: duckdb_wasm_eh, mainWorker: eh_worker },
-};
+// Use CDN only when VITE_USE_CDN_DUCKDB=true (e.g. Cloudflare, 25 MiB limit). Otherwise same-origin (dev + Vercel).
+const DUCKDB_CDN_VERSION = '1.32.0';
+const CDN_BASE = `https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@${DUCKDB_CDN_VERSION}/dist`;
+
+async function getBundles() {
+  if (__USE_CDN_DUCKDB__) {
+    return {
+      mvp: { mainModule: `${CDN_BASE}/duckdb-mvp.wasm`, mainWorker: `${CDN_BASE}/duckdb-browser-mvp.worker.js` },
+      eh: { mainModule: `${CDN_BASE}/duckdb-eh.wasm`, mainWorker: `${CDN_BASE}/duckdb-browser-eh.worker.js` },
+    };
+  }
+  const { bundles } = await import('./duckdb-bundles-local.js');
+  return bundles;
+}
 
 let dbInstance = null;
 let connectionInstance = null;
@@ -34,7 +39,8 @@ export const useDuckDB = () => {
         setLoading(true);
         setError(null);
 
-        const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+        const manualBundles = await getBundles();
+        const bundle = await duckdb.selectBundle(manualBundles);
         const worker = new Worker(bundle.mainWorker);
         const logger = new duckdb.ConsoleLogger();
 
