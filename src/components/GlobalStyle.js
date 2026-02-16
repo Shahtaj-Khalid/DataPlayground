@@ -60,6 +60,7 @@ export const GlobalStyle = createGlobalStyle`
     --radius-lg: ${radius.lg};
     --radius-xl: ${radius.xl};
     --radius-2xl: ${radius['2xl']};
+    --radius-full: ${radius.full};
     /* Shadows */
     --shadow-sm: ${shadows.sm};
     --shadow-md: ${shadows.md};

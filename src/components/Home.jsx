@@ -173,14 +173,15 @@ const PrivateBadge = styled.div`
 const GetStartedBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: var(--space-3) var(--space-6);
-  min-height: 36px;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-8);
   background: var(--accent-primary);
   color: var(--text-inverse);
   font-size: var(--text-xs);
-  font-weight: 500;
-  border-radius: var(--radius-md);
+  font-weight: 600;
+  border-radius: var(--radius-full);
   text-decoration: none;
   box-shadow: var(--shadow-glow);
   transition: var(--transition-default);
@@ -295,16 +296,20 @@ const BtnRow = styled.div`
 const BtnPrimary = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-10);
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: 18px 56px;
   background: var(--accent-primary);
   color: var(--text-inverse);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: 9999px;
   text-decoration: none;
   box-shadow: var(--shadow-glow);
   transition: var(--transition-default);
+  white-space: nowrap;
+
   &:hover {
     filter: brightness(1.05);
     transform: translateY(-1px);
@@ -361,7 +366,7 @@ const HeroVisual = styled.div`
 
 const HeroImage = styled.div`
   width: 100%;
-  max-width: 8rem;
+  max-width: 11rem;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -696,7 +701,7 @@ const Home = () => {
         <HeroRight>
           <HeroVisual>
             <HeroImage>
-              <img src="/data-playground-logo.svg" alt="" style={{ width: 80, height: 80, objectFit: 'contain' }} />
+              <img src="/data-playground-logo.svg" alt="" style={{ width: 120, height: 120, objectFit: 'contain' }} />
             </HeroImage>
             <HeroImageGlow />
           </HeroVisual>

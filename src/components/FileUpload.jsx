@@ -245,11 +245,12 @@ const PrimaryButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-8);
+  min-height: 48px;
+  padding: var(--space-4) var(--space-10);
   background: var(--accent-primary);
   color: var(--text-inverse);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   font-size: var(--text-md);
   font-weight: 600;
   cursor: pointer;

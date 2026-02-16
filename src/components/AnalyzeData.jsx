@@ -25,7 +25,7 @@ const Card = styled.div`
   border: 1px solid var(--card-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
-  padding: var(--space-8);
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12);
   margin-bottom: var(--space-6);
   box-shadow: var(--shadow-md);
 `;
@@ -83,12 +83,14 @@ const StatLabel = styled.div`
   font-weight: 600;
   letter-spacing: 0.04em;
   margin-bottom: var(--space-2);
+  margin-left: var(--space-2);
 `;
 
 const StatValue = styled.div`
   font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--text-primary);
+  margin-left: var(--space-2);
 `;
 
 const TableWrapper = styled.div`
@@ -185,36 +187,35 @@ const AnalyzeData = () => {
           
           if (sample.length > 0 && typeof sample[0][col] === 'number') {
             numericColumns.push(col);
-            
+            const q = (c) => `"${String(c).replace(/"/g, '""')}"`;
             const statsQuery = `
               SELECT 
                 COUNT(*) as count,
-                COUNT(DISTINCT ${col}) as distinct_count,
-                MIN(${col}) as min_val,
-                MAX(${col}) as max_val,
-                AVG(${col}) as avg_val,
-                STDDEV(${col}) as stddev_val
+                COUNT(DISTINCT ${q(col)}) as distinct_count,
+                COUNT(*) - COUNT(${q(col)}) as null_count,
+                MIN(${q(col)}) as min_val,
+                MAX(${q(col)}) as max_val,
+                AVG(${q(col)}) as avg_val,
+                STDDEV(${q(col)}) as stddev_val
               FROM ${dataset.tableName}
-              WHERE ${col} IS NOT NULL
             `;
-            
             const colStats = await query(statsQuery);
             if (colStats.length > 0) {
               columnStatsData.push({
                 column: col,
-                ...colStats[0]
+                ...colStats[0],
+                type: 'numeric'
               });
             }
           } else {
-            // For non-numeric columns, get distinct count and null count
+            const q = (c) => `"${String(c).replace(/"/g, '""')}"`;
             const textStatsQuery = `
               SELECT 
                 COUNT(*) as count,
-                COUNT(DISTINCT ${col}) as distinct_count,
-                COUNT(*) - COUNT(${col}) as null_count
+                COUNT(DISTINCT ${q(col)}) as distinct_count,
+                COUNT(*) - COUNT(${q(col)}) as null_count
               FROM ${dataset.tableName}
             `;
-            
             const textStats = await query(textStatsQuery);
             if (textStats.length > 0) {
               columnStatsData.push({
@@ -311,35 +312,34 @@ const AnalyzeData = () => {
                           <Th>Column</Th>
                           <Th>Count</Th>
                           <Th>Distinct</Th>
-                          {columnStats[0]?.min_val !== undefined && (
-                            <>
-                              <Th>Min</Th>
-                              <Th>Max</Th>
-                              <Th>Average</Th>
-                              <Th>Std Dev</Th>
-                            </>
-                          )}
-                          {columnStats[0]?.null_count !== undefined && (
-                            <Th>Null Count</Th>
-                          )}
+                          <Th>Null Count</Th>
+                          <Th>Min</Th>
+                          <Th>Max</Th>
+                          <Th>Average</Th>
+                          <Th>Std Dev</Th>
                         </tr>
                       </thead>
                       <tbody>
                         {columnStats.map((stat, idx) => (
                           <Tr key={idx}>
                             <Td><strong>{stat.column}</strong></Td>
-                            <Td>{stat.count?.toLocaleString()}</Td>
-                            <Td>{stat.distinct_count?.toLocaleString()}</Td>
-                            {stat.min_val !== undefined && (
+                            <Td>{stat.count != null ? Number(stat.count).toLocaleString() : '—'}</Td>
+                            <Td>{stat.distinct_count != null ? Number(stat.distinct_count).toLocaleString() : '—'}</Td>
+                            <Td>{stat.null_count != null ? Number(stat.null_count).toLocaleString() : '—'}</Td>
+                            {stat.type === 'numeric' ? (
                               <>
-                                <Td>{stat.min_val?.toFixed(2)}</Td>
-                                <Td>{stat.max_val?.toFixed(2)}</Td>
-                                <Td>{stat.avg_val?.toFixed(2)}</Td>
-                                <Td>{stat.stddev_val?.toFixed(2)}</Td>
+                                <Td>{stat.min_val != null ? Number(stat.min_val).toFixed(2) : '—'}</Td>
+                                <Td>{stat.max_val != null ? Number(stat.max_val).toFixed(2) : '—'}</Td>
+                                <Td>{stat.avg_val != null ? Number(stat.avg_val).toFixed(2) : '—'}</Td>
+                                <Td>{stat.stddev_val != null ? Number(stat.stddev_val).toFixed(2) : '—'}</Td>
                               </>
-                            )}
-                            {stat.null_count !== undefined && (
-                              <Td>{stat.null_count?.toLocaleString()}</Td>
+                            ) : (
+                              <>
+                                <Td>—</Td>
+                                <Td>—</Td>
+                                <Td>—</Td>
+                                <Td>—</Td>
+                              </>
                             )}
                           </Tr>
                         ))}

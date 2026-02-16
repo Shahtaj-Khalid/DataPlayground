@@ -133,12 +133,14 @@ const Select = styled.select`
 `;
 
 const PrimaryButton = styled.button`
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-8);
+  min-height: 48px;
+  padding: var(--space-4) var(--space-10);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   background: var(--accent-primary);
   color: var(--text-inverse);
   font-size: var(--text-sm);
