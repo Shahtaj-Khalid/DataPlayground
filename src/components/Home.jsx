@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Link } from 'react-router-dom';
 import {
@@ -348,61 +348,195 @@ const HeroRight = styled.div`
   max-width: 36rem;
   width: 100%;
   margin: 0 auto;
+  container-type: inline-size;
+  container-name: hero-right;
   @media (min-width: 1024px) {
     margin: 0;
     max-width: none;
   }
 `;
 
+const LOGO_SIZE = 120;
+
 const HeroVisual = styled.div`
   position: relative;
   margin-bottom: var(--space-4);
+  min-height: 200px;
   display: none;
   @media (min-width: 768px) {
     display: block;
-    animation: ${float} 5s ease-in-out infinite;
   }
 `;
 
-const HeroImage = styled.div`
+const LogoPlayArea = styled.div`
+  position: relative;
   width: 100%;
-  max-width: 11rem;
-  margin: 0 auto;
+  height: 200px;
+  animation: ${float} 5s ease-in-out infinite;
+`;
+
+const LogoDraggable = styled.div`
+  position: absolute;
+  width: ${LOGO_SIZE}px;
+  height: ${LOGO_SIZE}px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
+  z-index: 2;
+  &:active {
+    cursor: grabbing;
   }
 `;
 
-const HeroImageGlow = styled.div`
+const logoPopKeyframes = keyframes`
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+`;
+
+const LogoImageWrap = styled.div`
+  position: relative;
+  width: ${LOGO_SIZE}px;
+  height: ${LOGO_SIZE}px;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    animation: ${(p) => (p.$pop ? logoPopKeyframes : 'none')} 0.4s ease;
+  }
+`;
+
+const TapReactionBubble = styled.div`
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  margin-bottom: 8px;
+  padding: 6px 12px;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 9999px;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  animation: floatUp 0.6s ease forwards;
+  pointer-events: none;
+  z-index: 3;
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0.8); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-28px) scale(1.1); }
+  }
+`;
+
+const LogoHint = styled.p`
+  margin-top: var(--space-2);
+  font-size: 7px;
+  color: var(--text-tertiary);
+  text-align: center;
+  font-style: italic;
+`;
+
+const TapBadge = styled.div`
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-sm);
+`;
+
+const LogoGlow = styled.div`
   position: absolute;
   inset: -12px;
   background: rgba(29, 173, 142, 0.06);
   border-radius: 16px;
   filter: blur(24px);
   z-index: -1;
+  pointer-events: none;
+`;
+
+const WinOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  animation: fadeIn 0.25s ease;
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+const WinCard = styled.div`
+  background: var(--bg-surface);
+  padding: var(--space-10);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  max-width: 320px;
+  animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.9) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+`;
+
+const WinTitle = styled.div`
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-2);
+`;
+
+const WinSub = styled.div`
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+`;
+
+const WinDismiss = styled.button`
+  padding: var(--space-3) var(--space-6);
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    filter: brightness(1.05);
+  }
 `;
 
 const FeatureGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
   width: 100%;
   max-width: 28rem;
+  /* Gap scales with container (HeroRight) width: even on laptop and monitor */
+  gap: clamp(10px, 2.5cqi, 24px);
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     max-width: none;
-  }
-  @media (min-width: 1280px) {
-    gap: var(--space-4);
-  }
-  @media (min-width: 1600px) {
-    gap: var(--space-5);
   }
 `;
 
@@ -486,13 +620,32 @@ const FeatureGridHint = styled.div`
   justify-content: center;
   gap: 6px;
   margin-top: var(--space-3);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text-tertiary);
 `;
 
 const FeatureGridHintIcon = styled.span`
   display: inline-flex;
   animation: ${hintBounce} 1.5s ease-in-out infinite;
+`;
+
+const SupportNote = styled.p`
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 28rem;
+  a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-default);
+    transition: var(--transition-default);
+    &:hover {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+  }
 `;
 
 const BottomBar = styled.footer`
@@ -620,6 +773,94 @@ const Home = () => {
   const [clickedFeature, setClickedFeature] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  const [logoPos, setLogoPos] = useState({ x: 0, y: 40 });
+  const [tapCount, setTapCount] = useState(0);
+  const [wonMessage, setWonMessage] = useState(null);
+  const [logoPop, setLogoPop] = useState(false);
+  const [tapReaction, setTapReaction] = useState(null);
+  const logoAreaRef = useRef(null);
+  const dragRef = useRef({ isDragging: false, startX: 0, startY: 0, startLogoX: 0, startLogoY: 0, startedOnLogo: false });
+  const tapCountRef = useRef(0);
+  const MILESTONE_MSGS = { 10: '10! 🎉', 20: '20! 🔥', 30: '30! ✨', 40: '40! 💪', 50: '50! 🏆' };
+
+  tapCountRef.current = tapCount;
+
+  useEffect(() => {
+    const el = logoAreaRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = Math.max(0, (rect.width - LOGO_SIZE) / 2);
+    const y = Math.max(0, (rect.height - LOGO_SIZE) / 2);
+    setLogoPos({ x, y });
+  }, []);
+
+  const clampLogo = useCallback((x, y) => {
+    const el = logoAreaRef.current;
+    if (!el) return { x, y };
+    const rect = el.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(rect.width - LOGO_SIZE, x)),
+      y: Math.max(0, Math.min(rect.height - LOGO_SIZE, y)),
+    };
+  }, []);
+
+  const handleLogoPointerDown = (e) => {
+    e.preventDefault();
+    dragRef.current = {
+      isDragging: false,
+      startX: e.clientX ?? e.touches?.[0]?.clientX,
+      startY: e.clientY ?? e.touches?.[0]?.clientY,
+      startLogoX: logoPos.x,
+      startLogoY: logoPos.y,
+      startedOnLogo: true,
+    };
+  };
+
+  useEffect(() => {
+    const onMove = (e) => {
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+      const clientY = e.clientY ?? e.touches?.[0]?.clientY;
+      const { startX, startY, startLogoX, startLogoY } = dragRef.current;
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+      if (!dragRef.current.isDragging && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+        dragRef.current.isDragging = true;
+      }
+      if (dragRef.current.isDragging) {
+        if (e.cancelable) e.preventDefault();
+        setLogoPos((prev) => clampLogo(startLogoX + dx, startLogoY + dy));
+      }
+    };
+    const onUp = () => {
+      const { isDragging, startedOnLogo } = dragRef.current;
+      if (startedOnLogo && !isDragging) {
+        setLogoPop(true);
+        setTimeout(() => setLogoPop(false), 450);
+        const next = tapCountRef.current + 1;
+        const msg = MILESTONE_MSGS[next] ?? `+${next}`;
+        setTapReaction({ key: Date.now(), msg });
+        setTimeout(() => setTapReaction(null), 650);
+        setTapCount((c) => {
+          const next = c + 1;
+          if (next === 10) setWonMessage(10);
+          if (next === 50) setWonMessage(50);
+          return next;
+        });
+      }
+      dragRef.current = { isDragging: false, startX: 0, startY: 0, startLogoX: 0, startLogoY: 0, startedOnLogo: false };
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onUp);
+    };
+  }, [clampLogo]);
+
   const handleCopyEmail = async () => {
     try {
       await navigator.clipboard.writeText(CONTACT_EMAIL);
@@ -700,10 +941,22 @@ const Home = () => {
 
         <HeroRight>
           <HeroVisual>
-            <HeroImage>
-              <img src="/data-playground-logo.svg" alt="" style={{ width: 120, height: 120, objectFit: 'contain' }} />
-            </HeroImage>
-            <HeroImageGlow />
+            <LogoPlayArea ref={logoAreaRef}>
+              <LogoDraggable
+                style={{ left: logoPos.x, top: logoPos.y }}
+                onPointerDown={handleLogoPointerDown}
+              >
+                <LogoImageWrap $pop={logoPop}>
+                  <img src="/data-playground-logo.svg" alt="Data Playground" draggable={false} />
+                  {tapReaction && (
+                    <TapReactionBubble key={tapReaction.key}>{tapReaction.msg}</TapReactionBubble>
+                  )}
+                  {tapCount > 0 && <TapBadge>{tapCount}</TapBadge>}
+                </LogoImageWrap>
+                <LogoGlow />
+              </LogoDraggable>
+            </LogoPlayArea>
+            <LogoHint>bored? try clicking (or dragging) the logo :)</LogoHint>
           </HeroVisual>
           <FeatureGrid>
             {features.map((f, i) => (
@@ -726,10 +979,18 @@ const Home = () => {
           </FeatureGrid>
           <FeatureGridHint>
             <FeatureGridHintIcon>
-              <MousePointer2 size={12} />
+              <MousePointer2 size={15} />
             </FeatureGridHintIcon>
             hover or click to know more
           </FeatureGridHint>
+          <SupportNote>
+            We currently support CSV, XLS, and XLSX files only. To request more formats or suggest changes,{' '}
+            <a href={GITHUB_FEATURE_REQUEST_URL} target="_blank" rel="noopener noreferrer">
+              request a feature
+            </a>{' '}
+            or{' '}
+            <a href="#" onClick={(e) => { e.preventDefault(); handleCopyEmail(); }}>contact us</a>.
+          </SupportNote>
         </HeroRight>
       </Main>
 
@@ -747,6 +1008,24 @@ const Home = () => {
       </BottomBar>
 
       {copied && <Toast>Email copied to clipboard</Toast>}
+
+      {wonMessage !== null && (
+        <WinOverlay onClick={() => setWonMessage(null)}>
+          <WinCard onClick={(e) => e.stopPropagation()}>
+            <WinTitle>
+              {wonMessage === 10 ? '🎉 Keep Going!' : '🏆 Legend! 50 taps!'}
+            </WinTitle>
+            <WinSub>
+              {wonMessage === 10
+                ? '10 taps — you\'re on fire!'
+                : '50 taps — you\'re the WINNER at the data playground today!'}
+            </WinSub>
+            <WinDismiss type="button" onClick={() => setWonMessage(null)}>
+              Awesome
+            </WinDismiss>
+          </WinCard>
+        </WinOverlay>
+      )}
     </PageWrap>
   );
 };

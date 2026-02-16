@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { GlobalStyle } from './components/GlobalStyle';
 import AppLayout from './components/AppLayout';
 import Home from './components/Home';
@@ -13,6 +14,7 @@ function App() {
   return (
     <Router>
       <GlobalStyle />
+      <Analytics />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route element={<AppLayout />}>
