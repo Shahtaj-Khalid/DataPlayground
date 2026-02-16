@@ -174,8 +174,8 @@ const GetStartedBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: var(--space-2) var(--space-4);
-  height: 32px;
+  padding: var(--space-3) var(--space-6);
+  min-height: 36px;
   background: var(--accent-primary);
   color: var(--text-inverse);
   font-size: var(--text-xs);
@@ -296,7 +296,7 @@ const BtnPrimary = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-5) var(--space-8);
+  padding: var(--space-5) var(--space-10);
   background: var(--accent-primary);
   color: var(--text-inverse);
   font-size: var(--text-sm);

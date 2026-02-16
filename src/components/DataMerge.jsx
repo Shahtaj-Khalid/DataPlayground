@@ -74,6 +74,45 @@ const FileInfo = styled.div`
   color: var(--text-secondary);
 `;
 
+const SelectionOrder = styled.div`
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: var(--card-bg);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+`;
+
+const SelectionLabel = styled.span`
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: var(--space-2);
+`;
+
+const SelectionRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+`;
+
+const OrderBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: var(--accent-primary-muted);
+  color: var(--accent-primary);
+`;
+
 const Select = styled.select`
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-default);
@@ -97,7 +136,7 @@ const PrimaryButton = styled.button`
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-4) var(--space-8);
   border: none;
   border-radius: var(--radius-lg);
   background: var(--accent-primary);
@@ -222,24 +261,48 @@ const DataMerge = () => {
         throw new Error('Selected datasets not found');
       }
 
-      // Build SQL JOIN query
+      // Quote identifier for SQL (DuckDB uses double quotes)
+      const quote = (col) => `"${String(col).replace(/"/g, '""')}"`;
+      const inBoth = (c) => dataset1.columns.includes(c) && dataset2.columns.includes(c);
+      // Join column: use COALESCE so outer joins show the value from whichever side has it (left-only, right-only, or both).
+      const joinColExpr = `COALESCE(t1.${quote(joinColumn)}, t2.${quote(joinColumn)}) AS ${quote(joinColumn)}`;
+      // Other columns: alias left_/right_ only when the same name exists in both (to avoid duplicate keys).
+      const cols1 = dataset1.columns
+        .filter((c) => c !== joinColumn)
+        .map((c) => {
+          const alias = inBoth(c) ? `left_${c}` : c;
+          return `t1.${quote(c)} AS ${quote(alias)}`;
+        });
+      const cols2 = dataset2.columns
+        .filter((c) => c !== joinColumn)
+        .map((c) => {
+          const alias = inBoth(c) ? `right_${c}` : c;
+          return `t2.${quote(c)} AS ${quote(alias)}`;
+        });
+      const selectList = [joinColExpr, ...cols1, ...cols2].join(', ');
+
       const sql = `
-        SELECT *
+        SELECT ${selectList}
         FROM ${dataset1.tableName} t1
         ${joinType} JOIN ${dataset2.tableName} t2
-        ON t1.${joinColumn} = t2.${joinColumn}
+        ON t1.${quote(joinColumn)} = t2.${quote(joinColumn)}
         LIMIT 10000
       `;
 
       const results = await query(sql);
-      
-      // Convert to array of objects
+
+      // Convert to plain objects: handle BigInt (JSON can't serialize it) and proxy/duplicate keys
+      const toPlain = (val) => (typeof val === 'bigint' ? val.toString() : val);
       const formattedResults = results.map(row => {
-        const obj = {};
-        Object.keys(row).forEach(key => {
-          obj[key] = row[key];
-        });
-        return obj;
+        try {
+          return JSON.parse(JSON.stringify(row, (_, v) => toPlain(v)));
+        } catch (_) {
+          const obj = {};
+          for (const key in row) {
+            obj[key] = toPlain(row[key]);
+          }
+          return obj;
+        }
       });
 
       setMergeResults(formattedResults);
@@ -293,6 +356,18 @@ const DataMerge = () => {
 
             {selectedDatasets.length === 2 && (
               <>
+                <SelectionOrder>
+                  <SelectionLabel>Selection order (1st = left table, 2nd = right table in the join)</SelectionLabel>
+                  <SelectionRow>
+                    <OrderBadge>1st</OrderBadge>
+                    {datasets.find(d => d.id === selectedDatasets[0])?.name ?? '—'}
+                  </SelectionRow>
+                  <SelectionRow>
+                    <OrderBadge>2nd</OrderBadge>
+                    {datasets.find(d => d.id === selectedDatasets[1])?.name ?? '—'}
+                  </SelectionRow>
+                </SelectionOrder>
+
                 <div style={{ 
                   marginBottom: '16px', 
                   padding: '16px', 

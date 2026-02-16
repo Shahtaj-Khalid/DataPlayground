@@ -73,7 +73,19 @@ const Controls = styled.div`
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
+`;
+
+const ControlGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+`;
+
+const ControlLabel = styled.span`
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
 `;
 
 const Select = styled.select`
@@ -96,7 +108,7 @@ const PrimaryButton = styled.button`
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-8);
   background: var(--accent-primary);
   color: var(--text-inverse);
   border: none;
@@ -288,46 +300,58 @@ const DataVisualization = () => {
           <Card>
             <CardTitle>Build a chart</CardTitle>
             <Controls>
-              <Select
-                value={selectedDataset}
-                onChange={(e) => setSelectedDataset(e.target.value)}
-              >
-                {datasets.map(dataset => (
-                  <option key={dataset.id} value={dataset.id}>
-                    {dataset.name} ({dataset.rowCount} rows)
-                  </option>
-                ))}
-              </Select>
+              <ControlGroup>
+                <ControlLabel>Dataset</ControlLabel>
+                <Select
+                  value={selectedDataset}
+                  onChange={(e) => setSelectedDataset(e.target.value)}
+                >
+                  {datasets.map(dataset => (
+                    <option key={dataset.id} value={dataset.id}>
+                      {dataset.name} ({dataset.rowCount} rows)
+                    </option>
+                  ))}
+                </Select>
+              </ControlGroup>
 
-              <Select
-                value={xColumn}
-                onChange={(e) => setXColumn(e.target.value)}
-                disabled={!selectedDataset}
-              >
-                {selectedDatasetObj?.columns.map(col => (
-                  <option key={col} value={col}>{col}</option>
-                ))}
-              </Select>
+              <ControlGroup>
+                <ControlLabel>X axis (categories / labels)</ControlLabel>
+                <Select
+                  value={xColumn}
+                  onChange={(e) => setXColumn(e.target.value)}
+                  disabled={!selectedDataset}
+                >
+                  {selectedDatasetObj?.columns.map(col => (
+                    <option key={col} value={col}>{col}</option>
+                  ))}
+                </Select>
+              </ControlGroup>
 
-              <Select
-                value={yColumn}
-                onChange={(e) => setYColumn(e.target.value)}
-                disabled={!selectedDataset}
-              >
-                {selectedDatasetObj?.columns.map(col => (
-                  <option key={col} value={col}>{col}</option>
-                ))}
-              </Select>
+              <ControlGroup>
+                <ControlLabel>Y axis (values)</ControlLabel>
+                <Select
+                  value={yColumn}
+                  onChange={(e) => setYColumn(e.target.value)}
+                  disabled={!selectedDataset}
+                >
+                  {selectedDatasetObj?.columns.map(col => (
+                    <option key={col} value={col}>{col}</option>
+                  ))}
+                </Select>
+              </ControlGroup>
 
-              <Select
-                value={chartType}
-                onChange={(e) => setChartType(e.target.value)}
-              >
-                <option value="bar">Bar Chart</option>
-                <option value="line">Line Chart</option>
-                <option value="doughnut">Doughnut Chart</option>
-                <option value="scatter">Scatter Plot</option>
-              </Select>
+              <ControlGroup>
+                <ControlLabel>Chart type</ControlLabel>
+                <Select
+                  value={chartType}
+                  onChange={(e) => setChartType(e.target.value)}
+                >
+                  <option value="bar">Bar Chart</option>
+                  <option value="line">Line Chart</option>
+                  <option value="doughnut">Doughnut Chart</option>
+                  <option value="scatter">Scatter Plot</option>
+                </Select>
+              </ControlGroup>
 
               <PrimaryButton type="button" onClick={generateChart} disabled={loading || dbLoading || !xColumn || !yColumn}>
                 <RefreshCw size={18} />
