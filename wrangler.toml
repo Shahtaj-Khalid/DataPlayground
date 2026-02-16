@@ -1,0 +1,6 @@
+# Cloudflare Pages / static assets — deploy output from `npm run build`
+name = "data-playground"
+compatibility_date = "2026-02-16"
+
+[assets]
+directory = "./dist"
