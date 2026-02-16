@@ -35,7 +35,8 @@ const Tab = styled(NavLink)`
   font-size: var(--text-sm);
   font-weight: 500;
   border-radius: var(--radius-md);
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: var(--transition-default);
+  transition-property: color, background, border-left-color;
   border-left: 3px solid ${(p) => (p.$active ? 'var(--accent-primary)' : 'transparent')};
 
   &:hover {

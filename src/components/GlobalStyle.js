@@ -1,13 +1,17 @@
 import { createGlobalStyle } from 'styled-components';
-import { dark, spacing, radius, shadows, typography } from '../theme';
+import { light, spacing, radius, shadows, typography, transition } from '../theme';
 
-const theme = dark;
+const theme = light;
 
 export const GlobalStyle = createGlobalStyle`
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   :root {
@@ -25,12 +29,19 @@ export const GlobalStyle = createGlobalStyle`
     --accent-primary: ${theme.accent.primary};
     --accent-primary-hover: ${theme.accent.primaryHover};
     --accent-primary-muted: ${theme.accent.primaryMuted};
+    --accent-secondary: ${theme.accent.secondary};
+    --accent-secondary-hover: ${theme.accent.secondaryHover};
+    --accent-secondary-muted: ${theme.accent.secondaryMuted};
+    --accent-accent: ${theme.accent.accent};
+    --accent-accent-hover: ${theme.accent.accentHover};
+    --accent-accent-muted: ${theme.accent.accentMuted};
     --accent-success: ${theme.accent.success};
     --accent-success-muted: ${theme.accent.successMuted};
     --accent-warning: ${theme.accent.warning};
     --accent-error: ${theme.accent.error};
     --accent-error-muted: ${theme.accent.errorMuted};
     --card-bg: ${theme.card.bg};
+    --card-bg-hover: ${theme.card.bgHover};
     --card-border: ${theme.card.border};
     /* Spacing */
     --space-1: ${spacing[1]};
@@ -53,8 +64,17 @@ export const GlobalStyle = createGlobalStyle`
     --shadow-sm: ${shadows.sm};
     --shadow-md: ${shadows.md};
     --shadow-lg: ${shadows.lg};
+    --shadow-soft: ${shadows.soft};
+    --shadow-glow: ${shadows.glow};
+    --shadow-card: ${shadows.card};
+    --gradient-hero: linear-gradient(135deg, rgba(29, 173, 142, 0.08), rgba(232, 185, 35, 0.06), rgba(155, 125, 219, 0.05));
+    --gradient-primary: linear-gradient(135deg, #1dad8e, #15967a);
+    --gradient-warm: linear-gradient(135deg, #e8b923, #d4a91f);
+    --transition-default: ${transition.default};
+    --transition-smooth: ${transition.smooth};
     /* Typography */
     --font-sans: ${typography.fontFamily};
+    --font-display: ${typography.fontFamilyDisplay || typography.fontFamily};
     --font-mono: ${typography.fontFamilyMono};
     --text-xs: ${typography.fontSize.xs};
     --text-sm: ${typography.fontSize.sm};
@@ -73,7 +93,11 @@ export const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     background: var(--bg-app);
     color: var(--text-primary);
-    line-height: ${typography.lineHeight.normal};
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 
   code {
@@ -108,7 +132,7 @@ export const GlobalStyle = createGlobalStyle`
     color: var(--text-secondary);
   }
 
-  /* Smooth focus rings for a11y */
+  /* Focus: clear but gentle so it doesn’t feel harsh */
   :focus-visible {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;

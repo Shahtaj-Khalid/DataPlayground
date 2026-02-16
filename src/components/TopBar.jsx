@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { Database } from 'lucide-react';
 
 const TOP_BAR_HEIGHT = 56;
 
@@ -27,28 +26,24 @@ export { TOP_BAR_HEIGHT };
 const LogoLink = styled(Link)`
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   text-decoration: none;
   color: var(--text-primary);
-  font-size: var(--text-xl);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
   font-weight: 700;
-  letter-spacing: -0.03em;
-  transition: color 0.2s ease;
+  letter-spacing: -0.02em;
+  transition: var(--transition-default);
 
   &:hover {
     color: var(--accent-primary);
   }
 `;
 
-const LogoIcon = styled.span`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: var(--accent-primary-muted);
-  color: var(--accent-primary);
+const LogoIcon = styled.img`
+  width: 32px;
+  height: 32px;
+  display: block;
 `;
 
 const TopBar = () => {
@@ -56,9 +51,7 @@ const TopBar = () => {
     <TopBarEl>
       <TopBarInner>
         <LogoLink to="/">
-          <LogoIcon>
-            <Database size={20} strokeWidth={2} />
-          </LogoIcon>
+          <LogoIcon src="/data-playground-logo.svg" alt="Data Playground" />
           Data Playground
         </LogoLink>
       </TopBarInner>

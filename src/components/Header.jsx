@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
-import { Database, Upload, BarChart3, Search, Merge, FileSearch } from 'lucide-react';
+import { Upload, BarChart3, Search, Merge, FileSearch } from 'lucide-react';
 
 const HeaderContainer = styled.header`
   background: var(--bg-surface);
@@ -73,7 +73,7 @@ const Header = () => {
     <HeaderContainer>
       <HeaderContent>
         <Logo to="/">
-          <Database size={24} strokeWidth={1.8} />
+          <img src="/data-playground-logo.svg" alt="" width={28} height={28} />
           Data Playground
         </Logo>
         <Nav>

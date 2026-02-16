@@ -1,133 +1,87 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Github, Mail, Heart } from 'lucide-react';
+import { Database, Github, Mail } from 'lucide-react';
 
-// Set your email here for the Contact button
-const CONTACT_EMAIL = 'your-email@example.com';
+const CONTACT_EMAIL = 'shahtajkhalid1@gmail.com';
 
 const FooterContainer = styled.footer`
   background: var(--bg-surface);
   border-top: 1px solid var(--border-default);
-  padding: var(--space-10) var(--space-6) var(--space-8);
+  padding: var(--space-6) var(--space-6);
   margin-top: auto;
 `;
 
-const FooterContent = styled.div`
-  max-width: 1200px;
+const FooterInner = styled.div`
+  max-width: 72rem;
   margin: 0 auto;
-`;
-
-const FooterTop = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-10);
-  margin-bottom: var(--space-8);
-  align-items: start;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 `;
 
-const FooterSection = styled.div`
+const FooterBrand = styled.div`
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--space-2);
+  .icon {
+    color: var(--accent-primary);
+  }
+  span {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+  }
 `;
 
-const FooterTitle = styled.h3`
-  font-size: var(--text-md);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-`;
-
-const FooterText = styled.p`
-  color: var(--text-secondary);
+const FooterCopy = styled.p`
   font-size: var(--text-sm);
-  line-height: 1.6;
+  color: var(--text-secondary);
   margin: 0;
 `;
 
-const ButtonRow = styled.div`
+const FooterLinks = styled.div`
   display: flex;
   gap: var(--space-3);
   flex-wrap: wrap;
 `;
 
-const FooterButton = styled.a`
+const FooterLink = styled.a`
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
-  background: var(--border-subtle);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
-
+  transition: var(--transition-default);
   &:hover {
-    border-color: var(--accent-primary);
-    color: var(--text-primary);
-    transform: translateY(-1px);
+    color: var(--accent-primary);
   }
-`;
-
-const FooterBottom = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  padding-top: var(--space-8);
-  border-top: 1px solid var(--border-default);
-`;
-
-const Copyright = styled.p`
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  margin: 0;
 `;
 
 const Footer = () => {
   return (
     <FooterContainer>
-      <FooterContent>
-        <FooterTop>
-          <FooterSection>
-            <FooterTitle>Data Playground</FooterTitle>
-            <FooterText>
-              Privacy-first data analysis tool. Process, visualize, and analyze your data entirely in your browser.
-            </FooterText>
-          </FooterSection>
-
-          <FooterSection>
-            <FooterTitle>Privacy & Security</FooterTitle>
-            <FooterText>
-              All data processing happens client-side. No servers, no uploads, no tracking. Your data stays in your browser.
-            </FooterText>
-          </FooterSection>
-        </FooterTop>
-
-        <FooterBottom>
-          <Copyright>
-            © {new Date().getFullYear()} Data Playground. Made with <Heart size={14} style={{ display: 'inline', color: 'var(--accent-error)' }} /> for privacy-conscious users.
-          </Copyright>
-          <ButtonRow>
-            <FooterButton href="https://github.com" target="_blank" rel="noopener noreferrer">
-              <Github size={18} />
-              GitHub
-            </FooterButton>
-            <FooterButton href={`mailto:${CONTACT_EMAIL}`} target="_blank" rel="noopener noreferrer">
-              <Mail size={18} />
-              Contact
-            </FooterButton>
-          </ButtonRow>
-        </FooterBottom>
-      </FooterContent>
+      <FooterInner>
+        <FooterBrand>
+          <Database size={20} className="icon" />
+          <span>Data Playground</span>
+        </FooterBrand>
+        <FooterCopy>Built with privacy in mind. Your data never leaves your browser.</FooterCopy>
+        <FooterLinks>
+          <FooterLink href="https://github.com/Shahtaj-Khalid/DataPlayground" target="_blank" rel="noopener noreferrer">
+            <Github size={16} /> GitHub
+          </FooterLink>
+          <FooterLink href={`mailto:${CONTACT_EMAIL}`}>
+            <Mail size={16} /> Contact
+          </FooterLink>
+        </FooterLinks>
+      </FooterInner>
     </FooterContainer>
   );
 };

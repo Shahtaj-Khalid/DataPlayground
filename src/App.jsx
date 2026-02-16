@@ -14,8 +14,8 @@ function App() {
     <Router>
       <GlobalStyle />
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Home />} />
           <Route path="/upload" element={<FileUpload />} />
           <Route path="/visualize" element={<DataVisualization />} />
           <Route path="/query" element={<DataQuery />} />

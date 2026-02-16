@@ -27,6 +27,7 @@ const Card = styled.div`
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
   padding: var(--space-10);
   box-shadow: var(--shadow-md);
   animation: ${scaleIn} 0.35s ease-out;
