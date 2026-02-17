@@ -2,6 +2,8 @@
 
 A local-first, browser-based data exploration tool that runs entirely client-side. No backend, no authentication, no cloud services - just pure browser-based data manipulation.
 
+> This repo was built to help friends and colleagues with everyday sheet tasks—making it public for anyone to use.
+
 ## Features
 
 - 📊 **Upload & Parse**: CSV, XLS, XLSX file support

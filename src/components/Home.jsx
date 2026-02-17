@@ -914,7 +914,7 @@ const Home = () => {
             your <GradientWarm>playground.</GradientWarm>
           </Headline>
           <Subtitle>
-            Upload, visualize, query, and merge datasets — all in your browser.
+            Upload, visualize, query, and merge datasets, all in your browser.
             No servers, no data storage. Just pure analysis.
           </Subtitle>
           <BtnRow>
