@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Upload, BarChart3, Search, Merge, FileSearch } from 'lucide-react';
+import { Home, Upload, BarChart3, Search, Merge, FileSearch, Beaker } from 'lucide-react';
 
 const SidebarEl = styled.aside`
   width: 260px;
@@ -70,6 +70,7 @@ const Sidebar = () => {
     { path: '/query', label: 'Query', icon: Search },
     { path: '/merge', label: 'Merge', icon: Merge },
     { path: '/analyze', label: 'Analyze', icon: FileSearch },
+    { path: '/formulas', label: 'Formulas (Product)', icon: Beaker },
   ];
 
   return (

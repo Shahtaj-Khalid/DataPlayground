@@ -14,6 +14,7 @@ import {
   Github,
   Mail,
   MousePointer2,
+  Beaker,
 } from 'lucide-react';
 
 const float = keyframes`
@@ -282,7 +283,7 @@ const Subtitle = styled.p`
   font-size: var(--text-md);
   color: var(--text-secondary);
   max-width: 28rem;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-10);
   line-height: 1.6;
 `;
 
@@ -297,22 +298,26 @@ const BtnPrimary = styled(Link)`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-4);
-  min-height: 56px;
-  padding: 18px 56px;
-  background: var(--accent-primary);
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: 16px 48px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #17c0a0 100%);
   color: var(--text-inverse);
   font-size: var(--text-base);
   font-weight: 600;
   border-radius: 9999px;
   text-decoration: none;
-  box-shadow: var(--shadow-glow);
-  transition: var(--transition-default);
+  box-shadow: 0 0 24px -6px rgba(29, 173, 142, 0.35);
+  transition: all 0.28s cubic-bezier(0.33, 1, 0.68, 1);
   white-space: nowrap;
 
   &:hover {
-    filter: brightness(1.05);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 0 36px -4px rgba(29, 173, 142, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -751,16 +756,16 @@ const features = [
     bg: 'rgba(29, 173, 142, 0.12)',
   },
   {
-    icon: ShieldCheck,
-    title: 'Private',
-    description: 'Everything stays on your device',
+    icon: Beaker,
+    title: 'Formulas',
+    description: 'Sell-through, negate, split & more',
     color: 'var(--accent-secondary)',
     bg: 'rgba(232, 185, 35, 0.12)',
   },
   {
-    icon: Zap,
-    title: 'Fast',
-    description: 'In-browser engine, instant results',
+    icon: ShieldCheck,
+    title: 'Private',
+    description: 'Everything stays on your device',
     color: 'var(--accent-accent)',
     bg: 'rgba(155, 125, 219, 0.12)',
   },
@@ -818,6 +823,7 @@ const Home = () => {
 
   useEffect(() => {
     const onMove = (e) => {
+      if (!dragRef.current.startedOnLogo) return;
       const clientX = e.clientX ?? e.touches?.[0]?.clientX;
       const clientY = e.clientY ?? e.touches?.[0]?.clientY;
       const { startX, startY, startLogoX, startLogoY } = dragRef.current;

@@ -9,6 +9,7 @@ import DataVisualization from './components/DataVisualization';
 import DataQuery from './components/DataQuery';
 import DataMerge from './components/DataMerge';
 import AnalyzeData from './components/AnalyzeData';
+import FormulasProduct from './components/FormulasProduct';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/query" element={<DataQuery />} />
           <Route path="/merge" element={<DataMerge />} />
           <Route path="/analyze" element={<AnalyzeData />} />
+          <Route path="/formulas" element={<FormulasProduct />} />
         </Route>
       </Routes>
     </Router>

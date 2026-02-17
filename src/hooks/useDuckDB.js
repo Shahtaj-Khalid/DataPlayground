@@ -115,58 +115,61 @@ export const useDuckDB = () => {
       const csvFileName = `${tableName}.csv`;
       await dbRef.registerFileText(csvFileName, csvContent);
 
-      // Create table from CSV
+      // Create table from CSV. We generate the CSV ourselves (comma-delimited, double-quoted),
+      // so we can use read_csv with an explicit dialect instead of auto-detection.
       await conn.query(`
         CREATE TABLE ${tableName} AS 
-        SELECT * FROM read_csv_auto('${csvFileName}', header=true)
+        SELECT * FROM read_csv(
+          '${csvFileName}',
+          header=true,
+          delim=',',
+          quote='"',
+          escape='"',
+          parallel=false
+        )
       `);
 
       return true;
-    } catch (err) {
+      } catch (err) {
       console.error('Failed to register table with CSV method:', err);
       // Fallback: SQL INSERT approach
       try {
-        const columns = Object.keys(data[0]);
-        const columnDefs = columns.map(col => {
-          const sampleValue = data[0][col];
-          let type = 'VARCHAR';
-          
-          if (typeof sampleValue === 'number') {
-            type = Number.isInteger(sampleValue) ? 'INTEGER' : 'DOUBLE';
-          } else if (sampleValue instanceof Date) {
-            type = 'TIMESTAMP';
-          } else if (typeof sampleValue === 'boolean') {
-            type = 'BOOLEAN';
-          }
-          
-          return `${col} ${type}`;
-        }).join(', ');
+          const columns = Object.keys(data[0]);
+          const escapedColumns = columns.map((col) => `"${String(col).replace(/"/g, '""')}"`);
 
-        await conn.query(`CREATE TABLE ${tableName} (${columnDefs})`);
+          // Fallback path: keep it simple and robust.
+          // When the CSV helper fails, we create a fully-flexible table where
+          // every column is stored as text. This avoids numeric overflows and
+          // other type-cast issues for messy real-world data.
+          const columnDefs = escapedColumns
+            .map((escaped) => `${escaped} VARCHAR`)
+            .join(', ');
 
-        // Insert in smaller batches
-        const batchSize = 500;
-        for (let i = 0; i < data.length; i += batchSize) {
-          const batch = data.slice(i, i + batchSize);
-          const values = batch.map(row => {
-            const rowValues = columns.map(col => {
-              const value = row[col];
-              if (value === null || value === undefined) {
-                return 'NULL';
-              }
-              if (typeof value === 'string') {
-                return `'${String(value).replace(/'/g, "''")}'`;
-              }
-              return String(value);
+          await conn.query(`CREATE TABLE ${tableName} (${columnDefs})`);
+
+          // Insert in smaller batches
+          const batchSize = 500;
+          for (let i = 0; i < data.length; i += batchSize) {
+            const batch = data.slice(i, i + batchSize);
+            const values = batch.map((row) => {
+              const rowValues = columns.map((col) => {
+                const value = row[col];
+                if (value === null || value === undefined) {
+                  return 'NULL';
+                }
+                if (typeof value === 'string') {
+                  return `'${String(value).replace(/'/g, "''")}'`;
+                }
+                return String(value);
+              });
+              return `(${rowValues.join(', ')})`;
             });
-            return `(${rowValues.join(', ')})`;
-          });
-          
-          await conn.query(
-            `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ${values.join(', ')}`
-          );
-        }
-        return true;
+
+            await conn.query(
+              `INSERT INTO ${tableName} (${escapedColumns.join(', ')}) VALUES ${values.join(', ')}`
+            );
+          }
+          return true;
       } catch (fallbackErr) {
         console.error('Fallback registration also failed:', fallbackErr);
         throw fallbackErr;

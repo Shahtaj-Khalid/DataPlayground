@@ -2,7 +2,7 @@
 
 A local-first, browser-based data exploration tool that runs entirely client-side. No backend, no authentication, no cloud services—just pure browser-based data manipulation.
 
-> NOTE: This repo is built to help some friends and colleagues with everyday sheet tasks. Making it public for anyone to use. Please feel free to add feature / changes requests, I'll try to add them and maintain the repo.
+> This repo was built to help friends and colleagues with everyday sheet tasks—now public for anyone to use.
 
 ## Features
 
@@ -30,6 +30,13 @@ A local-first, browser-based data exploration tool that runs entirely client-sid
 - Statistical analysis of your datasets
 - Column-level statistics
 - Overview metrics
+
+### 6. Formulas (Product)
+- Apply spreadsheet-style formulas across one or two files
+- Built-in presets: sell-through rate, negate, split, percentage, difference
+- Optional two-file join with configurable match key
+- Custom formula support using `=[Column] + [Column]` syntax
+- All evaluation happens client-side—no SQL required
 
 ## Quick Start
 
