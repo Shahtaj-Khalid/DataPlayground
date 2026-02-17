@@ -2,7 +2,7 @@
 
 A local-first, browser-based data exploration tool that runs entirely client-side. No backend, no authentication, no cloud services—just pure browser-based data manipulation.
 
-> This repo was built to help friends and colleagues with everyday sheet tasks—now public for anyone to use.
+> NOTE: This repo is built to help some friends and colleagues with everyday sheet tasks. Making it public for anyone to use. Feel free to add feature requests, I'll try to add them and will maintain the repo.
 
 ## Features
 

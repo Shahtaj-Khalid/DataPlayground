@@ -403,10 +403,31 @@ const logoPopKeyframes = keyframes`
   100% { transform: scale(1); }
 `;
 
+const bossShakeKeyframes = keyframes`
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-3px, -2px) rotate(-2deg); }
+  30% { transform: translate(3px, 1px) rotate(1deg); }
+  45% { transform: translate(-2px, 3px) rotate(-1deg); }
+  60% { transform: translate(2px, -2px) rotate(2deg); }
+  75% { transform: translate(-3px, 1px) rotate(-1deg); }
+  90% { transform: translate(1px, -3px) rotate(1deg); }
+`;
+
+const bossPulseKeyframes = keyframes`
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+`;
+
+const victoryGlowKeyframes = keyframes`
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+  50% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.4); }
+`;
+
 const LogoImageWrap = styled.div`
   position: relative;
   width: ${LOGO_SIZE}px;
   height: ${LOGO_SIZE}px;
+  animation: ${p => p.$boss ? bossShakeKeyframes : 'none'} 0.35s linear infinite;
   img {
     width: 100%;
     height: 100%;
@@ -457,22 +478,24 @@ const TapBadge = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-primary);
-  color: var(--text-inverse);
+  background: ${p => p.$victory ? 'linear-gradient(135deg, #FFD700, #FFA500)' : p.$boss ? '#e74c3c' : 'var(--accent-primary)'};
+  color: ${p => p.$victory ? '#1a1a2e' : 'var(--text-inverse)'};
   font-size: 11px;
   font-weight: 700;
   border-radius: 9999px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: ${p => p.$victory ? '0 0 12px rgba(255, 215, 0, 0.5)' : p.$boss ? '0 0 8px rgba(231, 76, 60, 0.4)' : 'var(--shadow-sm)'};
+  animation: ${p => p.$boss ? bossPulseKeyframes : 'none'} 0.6s ease-in-out infinite;
 `;
 
 const LogoGlow = styled.div`
   position: absolute;
-  inset: -12px;
-  background: rgba(29, 173, 142, 0.06);
+  inset: ${p => p.$victory ? '-16px' : '-12px'};
+  background: ${p => p.$victory ? 'rgba(255, 215, 0, 0.12)' : p.$boss ? 'rgba(231, 76, 60, 0.1)' : 'rgba(29, 173, 142, 0.06)'};
   border-radius: 16px;
-  filter: blur(24px);
+  filter: blur(${p => p.$victory ? '18px' : '24px'});
   z-index: -1;
   pointer-events: none;
+  animation: ${p => p.$victory ? victoryGlowKeyframes : 'none'} 2s ease-in-out infinite;
 `;
 
 const WinOverlay = styled.div`
@@ -528,6 +551,64 @@ const WinDismiss = styled.button`
   cursor: pointer;
   &:hover {
     filter: brightness(1.05);
+  }
+`;
+
+const CertificateWrap = styled.div`
+  text-align: center;
+  padding: var(--space-4) 0;
+`;
+
+const CertificateCrown = styled.div`
+  font-size: 48px;
+  margin-bottom: var(--space-3);
+  animation: ${bossPulseKeyframes} 1.5s ease-in-out infinite;
+`;
+
+const CertificateName = styled.div`
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--space-2);
+`;
+
+const CertificateText = styled.div`
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-2);
+`;
+
+const CertificateDate = styled.div`
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-style: italic;
+  margin-bottom: var(--space-6);
+`;
+
+const NameInput = styled.input`
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-family: var(--font-display);
+  text-align: center;
+  outline: none;
+  margin-bottom: var(--space-4);
+  transition: border-color 0.2s ease;
+  &:focus {
+    border-color: #FFD700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+  }
+  &::placeholder {
+    color: var(--text-tertiary);
   }
 `;
 
@@ -783,10 +864,15 @@ const Home = () => {
   const [wonMessage, setWonMessage] = useState(null);
   const [logoPop, setLogoPop] = useState(false);
   const [tapReaction, setTapReaction] = useState(null);
+  const [bossDefeated, setBossDefeated] = useState(false);
+  const [championName, setChampionName] = useState(null);
+  const [championInput, setChampionInput] = useState('');
   const logoAreaRef = useRef(null);
   const dragRef = useRef({ isDragging: false, startX: 0, startY: 0, startLogoX: 0, startLogoY: 0, startedOnLogo: false });
   const tapCountRef = useRef(0);
-  const MILESTONE_MSGS = { 10: '10! 🎉', 20: '20! 🔥', 30: '30! ✨', 40: '40! 💪', 50: '50! 🏆' };
+  const MILESTONE_MSGS = { 10: '10! 🎉', 20: '20! 🔥', 30: '30! ✨', 40: '40! 💪', 50: '⚠️ Incoming!', 100: '💯 Century!', 150: '🔮 Keep going...', 200: '🐉 SECRET!' };
+  const BOSS_TAUNTS = ['Too slow!', 'Missed me!', 'Almost!', 'Nope!', 'Try again!', 'Can\'t catch me!', 'Ha!', 'Is that all?', 'Closer...', 'Not even close!'];
+  const VICTORY_LAPS = ['Legend!', 'Champion!', 'Unstoppable!', 'GOATed!', 'Flex 💪', 'Hero!', 'Boss!', 'Elite!', 'Wow!'];
 
   tapCountRef.current = tapCount;
 
@@ -843,14 +929,34 @@ const Home = () => {
         setLogoPop(true);
         setTimeout(() => setLogoPop(false), 450);
         const next = tapCountRef.current + 1;
-        const msg = MILESTONE_MSGS[next] ?? `+${next}`;
+
+        let msg;
+        if (MILESTONE_MSGS[next]) {
+          msg = MILESTONE_MSGS[next];
+        } else if (next > 50 && next < 75) {
+          msg = BOSS_TAUNTS[Math.floor(Math.random() * BOSS_TAUNTS.length)];
+        } else if (next >= 75) {
+          msg = VICTORY_LAPS[Math.floor(Math.random() * VICTORY_LAPS.length)];
+        } else {
+          msg = `+${next}`;
+        }
+
         setTapReaction({ key: Date.now(), msg });
         setTimeout(() => setTapReaction(null), 650);
+
+        if (next > 50 && next < 75) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 60 + Math.random() * 80;
+          setLogoPos(prev => clampLogo(prev.x + Math.cos(angle) * dist, prev.y + Math.sin(angle) * dist));
+        }
+
         setTapCount((c) => {
-          const next = c + 1;
-          if (next === 10) setWonMessage(10);
-          if (next === 50) setWonMessage(50);
-          return next;
+          const n = c + 1;
+          if (n === 10) setWonMessage(10);
+          if (n === 50) setWonMessage(50);
+          if (n === 75) { setWonMessage(75); setBossDefeated(true); }
+          if (n === 200) setWonMessage(200);
+          return n;
         });
       }
       dragRef.current = { isDragging: false, startX: 0, startY: 0, startLogoX: 0, startLogoY: 0, startedOnLogo: false };
@@ -952,14 +1058,21 @@ const Home = () => {
                 style={{ left: logoPos.x, top: logoPos.y }}
                 onPointerDown={handleLogoPointerDown}
               >
-                <LogoImageWrap $pop={logoPop}>
+                <LogoImageWrap $pop={logoPop} $boss={tapCount >= 50 && tapCount < 75 && !bossDefeated}>
                   <img src="/data-playground-logo.svg" alt="Data Playground" draggable={false} />
                   {tapReaction && (
                     <TapReactionBubble key={tapReaction.key}>{tapReaction.msg}</TapReactionBubble>
                   )}
-                  {tapCount > 0 && <TapBadge>{tapCount}</TapBadge>}
+                  {tapCount > 0 && (
+                    <TapBadge
+                      $boss={tapCount >= 50 && tapCount < 75 && !bossDefeated}
+                      $victory={bossDefeated}
+                    >
+                      {championName ? `👑 ${championName}` : bossDefeated ? `👑 ${tapCount}` : tapCount}
+                    </TapBadge>
+                  )}
                 </LogoImageWrap>
-                <LogoGlow />
+                <LogoGlow $victory={bossDefeated} $boss={tapCount >= 50 && tapCount < 75 && !bossDefeated} />
               </LogoDraggable>
             </LogoPlayArea>
             <LogoHint>bored? try clicking (or dragging) the logo :)</LogoHint>
@@ -1016,19 +1129,61 @@ const Home = () => {
       {copied && <Toast>Email copied to clipboard</Toast>}
 
       {wonMessage !== null && (
-        <WinOverlay onClick={() => setWonMessage(null)}>
+        <WinOverlay onClick={() => { if (wonMessage !== 200) setWonMessage(null); }}>
           <WinCard onClick={(e) => e.stopPropagation()}>
-            <WinTitle>
-              {wonMessage === 10 ? '🎉 Keep Going!' : '🏆 Legend! 50 taps!'}
-            </WinTitle>
-            <WinSub>
-              {wonMessage === 10
-                ? '10 taps — you\'re on fire!'
-                : '50 taps — you\'re the WINNER at the data playground today!'}
-            </WinSub>
-            <WinDismiss type="button" onClick={() => setWonMessage(null)}>
-              Awesome
-            </WinDismiss>
+            {wonMessage === 200 ? (
+              championName ? (
+                <CertificateWrap>
+                  <CertificateCrown>👑</CertificateCrown>
+                  <CertificateName>{championName}</CertificateName>
+                  <CertificateText>
+                    has earned the <strong>Bragging Rights</strong> of the<br />
+                    Data Dragon Slayer
+                  </CertificateText>
+                  <CertificateDate>
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </CertificateDate>
+                  <WinDismiss type="button" onClick={() => setWonMessage(null)}>
+                    Wear it proudly
+                  </WinDismiss>
+                </CertificateWrap>
+              ) : (
+                <CertificateWrap>
+                  <CertificateCrown>🐉</CertificateCrown>
+                  <WinTitle>Secret Unlocked!</WinTitle>
+                  <WinSub>200 taps. You absolute legend.<br />Enter your name to claim the throne.</WinSub>
+                  <form onSubmit={(e) => { e.preventDefault(); if (championInput.trim()) setChampionName(championInput.trim()); }}>
+                    <NameInput
+                      type="text"
+                      placeholder="Your name, champion..."
+                      value={championInput}
+                      onChange={(e) => setChampionInput(e.target.value)}
+                      autoFocus
+                      maxLength={30}
+                    />
+                    <WinDismiss as="button" type="submit" disabled={!championInput.trim()}>
+                      Claim the Crown
+                    </WinDismiss>
+                  </form>
+                </CertificateWrap>
+              )
+            ) : (
+              <>
+                <WinTitle>
+                  {wonMessage === 10 && '🎉 Keep Going!'}
+                  {wonMessage === 50 && '⚠️ Boss Approaching...'}
+                  {wonMessage === 75 && '👑 Victory!'}
+                </WinTitle>
+                <WinSub>
+                  {wonMessage === 10 && '10 taps — you\'re warming up! Can you reach 50?'}
+                  {wonMessage === 50 && 'The Data Dragon has awoken! It won\'t stay still anymore. Land 25 more hits to defeat it... if you can.'}
+                  {wonMessage === 75 && 'You defeated the Data Dragon in 75 taps! You\'ve earned eternal Bragging Rights. 🏆'}
+                </WinSub>
+                <WinDismiss type="button" onClick={() => setWonMessage(null)}>
+                  {wonMessage === 10 ? 'Bring it on!' : wonMessage === 50 ? 'Let\'s fight!' : 'I am the champion'}
+                </WinDismiss>
+              </>
+            )}
           </WinCard>
         </WinOverlay>
       )}
